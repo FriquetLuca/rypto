@@ -22,7 +22,7 @@ export default defineConfig({
     resolveDepSubpath: true,
   },
   */
-  entry: ['src/**/*.ts', '!src/**/*.test.ts'],
+  entry: ['src/index.ts', 'src/router/index.ts', '!src/**/*.test.ts'],
   root: 'src',
   platform: 'neutral',
   format: {
@@ -38,6 +38,6 @@ export default defineConfig({
   },
   exports: true,
   minify: true,
-  unbundle: true,
+  unbundle: false,
   treeshake: true,
 });

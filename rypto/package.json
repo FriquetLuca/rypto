@@ -18,6 +18,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./router": {
+      "import": "./dist/router/index.js",
+      "require": "./dist/router/index.cjs"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -26,6 +30,7 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "bench": "npx tsx bench/run.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -33,7 +38,9 @@
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
+    "tinybench": "^6.2.2",
     "tsdown": "^0.23.1",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "vitest": "^5.0.5"
   },

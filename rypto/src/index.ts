@@ -1,1 +1,1 @@
-export const hello = () => 'hello world';
+export * from './router/index.js';

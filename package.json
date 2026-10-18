@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "bench": "npm run bench --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,mjs,ts,mts,json}\" --log-level silent"
@@ -24,6 +25,9 @@
     "**/*.{js,ts,mjs,mts,json}": [
       "prettier --write"
     ]
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   },
   "engines": {
     "node": ">=22"
