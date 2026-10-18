@@ -1,0 +1,43 @@
+{
+  "name": "rypto",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "A typescript project created from a template.",
+  "author": "FriquetLuca",
+  "license": "MIT",
+  "homepage": "https://github.com/FriquetLuca/rypto",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FriquetLuca/rypto.git"
+  },
+  "bugs": {
+    "url": "https://github.com/FriquetLuca/rypto/issues"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "tsdown": "^0.23.1",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.cts"
+}

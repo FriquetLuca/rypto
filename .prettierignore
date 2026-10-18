@@ -1,4 +1,6 @@
-node_modules
-dist
-*.min.js
-package-lock.json
+node_modules/
+**/dist/
+**/build/
+**/coverage/
+**/*.tsbuildinfo
+.npm/
