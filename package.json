@@ -1,17 +1,17 @@
 {
-  "name": "TEMPLATE_NAME",
+  "name": "rypto",
   "type": "module",
   "version": "0.0.0",
-  "description": "TEMPLATE_DESCRIPTION",
-  "author": "TEMPLATE_OWNER",
+  "description": "A typescript project created from a template.",
+  "author": "FriquetLuca",
   "license": "MIT",
-  "homepage": "https://github.com/TEMPLATE_OWNER/TEMPLATE_NAME",
+  "homepage": "https://github.com/FriquetLuca/rypto",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TEMPLATE_OWNER/TEMPLATE_NAME.git"
+    "url": "git+https://github.com/FriquetLuca/rypto.git"
   },
   "bugs": {
-    "url": "https://github.com/TEMPLATE_OWNER/TEMPLATE_NAME/issues"
+    "url": "https://github.com/FriquetLuca/rypto/issues"
   },
   "exports": {
     ".": {

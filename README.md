@@ -1,9 +1,9 @@
-# TEMPLATE_PRETTY_NAME
+# Rypto
 
-![Publish Status](https://github.com/TEMPLATE_OWNER/TEMPLATE_NAME/actions/workflows/publish.yml/badge.svg)
-![Test Status](https://github.com/TEMPLATE_OWNER/TEMPLATE_NAME/actions/workflows/test.yml/badge.svg)
+![Publish Status](https://github.com/FriquetLuca/rypto/actions/workflows/publish.yml/badge.svg)
+![Test Status](https://github.com/FriquetLuca/rypto/actions/workflows/test.yml/badge.svg)
 
-TEMPLATE_DESCRIPTION
+A typescript project created from a template.
 
 ## ✨ Features
 
