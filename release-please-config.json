@@ -1,0 +1,90 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Features",
+          "hidden": false
+        },
+        {
+          "type": "change",
+          "section": "Features",
+          "hidden": false
+        },
+        {
+          "type": "deprecate",
+          "section": "Changes",
+          "hidden": false
+        },
+        {
+          "type": "remove",
+          "section": "Changes",
+          "hidden": false
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes",
+          "hidden": false
+        },
+        {
+          "type": "revert",
+          "section": "Bug Fixes",
+          "hidden": false
+        },
+        {
+          "type": "security",
+          "section": "Bug Fixes",
+          "hidden": false
+        },
+        {
+          "type": "perf",
+          "section": "Polish",
+          "hidden": false
+        },
+        {
+          "type": "refactor",
+          "section": "Polish",
+          "hidden": false
+        },
+        {
+          "type": "style",
+          "section": "Polish",
+          "hidden": false
+        },
+        {
+          "type": "build",
+          "section": "Other",
+          "hidden": false
+        },
+        {
+          "type": "chore",
+          "section": "Other",
+          "hidden": false
+        },
+        {
+          "type": "deps",
+          "section": "Other",
+          "hidden": true
+        },
+        {
+          "type": "ci",
+          "section": "Other",
+          "hidden": true
+        },
+        {
+          "type": "test",
+          "section": "Tests",
+          "hidden": false
+        },
+        {
+          "type": "docs",
+          "section": "Documentation",
+          "hidden": false
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,38 @@
+name: Post-Template Initialization
+on:
+  push:
+    branches: ["**"]
+
+jobs:
+  setup:
+    if: github.run_number == 1 && github.repository != 'FriquetLuca/typescript_library'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@v6
+      
+      - name: Replace placeholders
+        run: |
+          export CURRENT_YEAR=$(date +'%Y')
+          export NAME="${{ github.event.repository.name }}"
+          export OWNER="${{ github.repository_owner }}"
+          export DESC="${{ github.event.repository.description }}"
+          export PRETTY_NAME=$(python3 -c "import os; print(os.environ['NAME'].replace('-', ' ').replace('_', ' ').title())")
+          export CLEAN_DESC=$(python3 -c "import os; d = os.environ.get('DESC', ''); print(d if d and d != 'None' else 'A typescript project created from a template.')")
+          
+          sed -i "s|TEMPLATE_PRETTY_NAME|$PRETTY_NAME|g" README.md
+          sed -i "s|TEMPLATE_DESCRIPTION|$CLEAN_DESC|g" README.md package.json
+          sed -i "s|TEMPLATE_NAME|$NAME|g" README.md package.json package-lock.json
+          sed -i "s|TEMPLATE_OWNER|$OWNER|g" README.md package.json LICENSE
+          sed -i "s|CURRENT_YEAR|$CURRENT_YEAR|g" LICENSE
+          
+      - name: Cleanup and Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          rm .github/workflows/post-init.yml
+          git add .
+          # Check if there are changes before committing to avoid errors
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Initial template setup" && git push)

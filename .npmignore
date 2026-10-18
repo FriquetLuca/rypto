@@ -1,0 +1,51 @@
+#editor settings
+.idea
+.editorconfig
+.vscode
+
+#source control
+.husky
+.svn
+.hg
+.git*
+
+#formatting tools
+.prettier*
+
+#linters
+.jscsrc
+.jshintrc
+.eslintrc*
+
+#modules
+node_modules
+
+#sources (you should beep them if you need to map them)
+src/
+
+#examples (you could keep them if you're not having a public git repository)
+example
+examples
+
+#logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+#tests
+test/
+tests/
+coverage/
+
+#build tools
+.travis.yml
+.jenkins.yml
+.codeclimate.yml
+build.mjs
+eslint.config.js
+TODO.md
+tsconfig.json
