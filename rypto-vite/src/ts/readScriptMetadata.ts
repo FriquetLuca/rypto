@@ -56,9 +56,7 @@ const MAX_TOTAL_CALLS = 50_000;
 const MAX_LOOP_ITERATIONS = 100_000;
 
 type FunctionNode =
-  | ts.ArrowFunction
-  | ts.FunctionExpression
-  | ts.FunctionDeclaration;
+  ts.ArrowFunction | ts.FunctionExpression | ts.FunctionDeclaration;
 
 type ImportBinding =
   | { kind: 'named'; specifier: string; imported: string } // imported === 'default' for default imports
@@ -168,7 +166,8 @@ function parseModule(file: string, source: string): ModuleInfo {
 
   for (const statement of sourceFile.statements) {
     if (ts.isVariableStatement(statement)) {
-      const isConst = (statement.declarationList.flags & ts.NodeFlags.Const) !== 0;
+      const isConst =
+        (statement.declarationList.flags & ts.NodeFlags.Const) !== 0;
       const isExported = hasModifier(statement, ts.SyntaxKind.ExportKeyword);
       for (const declaration of statement.declarationList.declarations) {
         if (!ts.isIdentifier(declaration.name)) {
@@ -196,7 +195,10 @@ function parseModule(file: string, source: string): ModuleInfo {
         const name = statement.name.text;
         info.functions.set(name, statement);
         if (isExported) {
-          info.exports.set(isDefault ? 'default' : name, { kind: 'local', name });
+          info.exports.set(isDefault ? 'default' : name, {
+            kind: 'local',
+            name,
+          });
         }
       } else if (isExported && isDefault) {
         info.exports.set('default', { kind: 'function', node: statement });
@@ -244,7 +246,8 @@ function parseModule(file: string, source: string): ModuleInfo {
         continue;
       }
       const specifier =
-        statement.moduleSpecifier && ts.isStringLiteral(statement.moduleSpecifier)
+        statement.moduleSpecifier &&
+        ts.isStringLiteral(statement.moduleSpecifier)
           ? statement.moduleSpecifier.text
           : undefined;
 
@@ -368,7 +371,9 @@ function resolveLocal(
       value = new FunctionRef(declaredFunction, module, undefined);
     } else if (binding?.kind === 'named') {
       const target = loadModule(module.file, binding.specifier, session);
-      value = target ? resolveExport(target, binding.imported, session) : undefined;
+      value = target
+        ? resolveExport(target, binding.imported, session)
+        : undefined;
     }
   } finally {
     session.resolving.delete(key);
@@ -403,7 +408,9 @@ function resolveExport(
       value = new FunctionRef(binding.node, module, undefined);
     } else if (binding?.kind === 'reexport') {
       const target = loadModule(module.file, binding.specifier, session);
-      value = target ? resolveExport(target, binding.imported, session) : undefined;
+      value = target
+        ? resolveExport(target, binding.imported, session)
+        : undefined;
     } else if (!binding && exportName !== 'default') {
       // `export *` never re-exports the default export.
       for (const specifier of module.starExports) {
@@ -450,7 +457,10 @@ const COMPOUND_ASSIGNMENTS = new Map<ts.SyntaxKind, ts.SyntaxKind>([
   [ts.SyntaxKind.AsteriskEqualsToken, ts.SyntaxKind.AsteriskToken],
   [ts.SyntaxKind.SlashEqualsToken, ts.SyntaxKind.SlashToken],
   [ts.SyntaxKind.PercentEqualsToken, ts.SyntaxKind.PercentToken],
-  [ts.SyntaxKind.AsteriskAsteriskEqualsToken, ts.SyntaxKind.AsteriskAsteriskToken],
+  [
+    ts.SyntaxKind.AsteriskAsteriskEqualsToken,
+    ts.SyntaxKind.AsteriskAsteriskToken,
+  ],
 ]);
 
 function createScope(parent: Scope | undefined): Scope {
@@ -603,10 +613,13 @@ function runExpressionStatement(
 
 /** Runs one statement as the body of something (if / loop), in its own scope. */
 function runNested(statement: ts.Statement, ctx: EvalContext): Completion {
-  return runStatements(ts.isBlock(statement) ? statement.statements : [statement], {
-    ...ctx,
-    scope: createScope(ctx.scope),
-  });
+  return runStatements(
+    ts.isBlock(statement) ? statement.statements : [statement],
+    {
+      ...ctx,
+      scope: createScope(ctx.scope),
+    }
+  );
 }
 
 function runStatement(statement: ts.Statement, ctx: EvalContext): Completion {
@@ -639,7 +652,9 @@ function runStatement(statement: ts.Statement, ctx: EvalContext): Completion {
     if (condition === undefined) {
       return BAIL; // cannot tell which branch runs
     }
-    const branch = condition ? statement.thenStatement : statement.elseStatement;
+    const branch = condition
+      ? statement.thenStatement
+      : statement.elseStatement;
     return branch ? runNested(branch, ctx) : { kind: 'normal' };
   }
 
@@ -692,7 +707,10 @@ function runStatement(statement: ts.Statement, ctx: EvalContext): Completion {
       current = copyScope(current);
       if (
         statement.incrementor &&
-        !runExpressionStatement(statement.incrementor, { ...ctx, scope: current })
+        !runExpressionStatement(statement.incrementor, {
+          ...ctx,
+          scope: current,
+        })
       ) {
         return BAIL;
       }
@@ -761,7 +779,10 @@ function runStatement(statement: ts.Statement, ctx: EvalContext): Completion {
       if (isConst) {
         iterationScope.constants.add(name);
       }
-      const body = runNested(statement.statement, { ...ctx, scope: iterationScope });
+      const body = runNested(statement.statement, {
+        ...ctx,
+        scope: iterationScope,
+      });
       if (body.kind === 'return' || body.kind === 'bail') {
         return body;
       }
@@ -793,7 +814,11 @@ function runStatements(
 
   // Function declarations are hoisted.
   for (const statement of statements) {
-    if (ts.isFunctionDeclaration(statement) && statement.name && statement.body) {
+    if (
+      ts.isFunctionDeclaration(statement) &&
+      statement.name &&
+      statement.body
+    ) {
       scope.vars.set(
         statement.name.text,
         new FunctionRef(statement, ctx.module, scope)
@@ -810,7 +835,10 @@ function runStatements(
   return { kind: 'normal' };
 }
 
-function evaluateCall(expression: ts.CallExpression, ctx: EvalContext): CallResult {
+function evaluateCall(
+  expression: ts.CallExpression,
+  ctx: EvalContext
+): CallResult {
   const callee = getExportValue(expression.expression, ctx);
   if (!(callee instanceof FunctionRef)) {
     return { ok: false };
@@ -923,13 +951,21 @@ function evaluateBinary(
       }
       return undefined;
     case ts.SyntaxKind.EqualsEqualsEqualsToken:
-      return isPrimitive(left) && isPrimitive(right) ? left === right : undefined;
+      return isPrimitive(left) && isPrimitive(right)
+        ? left === right
+        : undefined;
     case ts.SyntaxKind.ExclamationEqualsEqualsToken:
-      return isPrimitive(left) && isPrimitive(right) ? left !== right : undefined;
+      return isPrimitive(left) && isPrimitive(right)
+        ? left !== right
+        : undefined;
     case ts.SyntaxKind.EqualsEqualsToken:
-      return isPrimitive(left) && isPrimitive(right) ? left == right : undefined;
+      return isPrimitive(left) && isPrimitive(right)
+        ? left == right
+        : undefined;
     case ts.SyntaxKind.ExclamationEqualsToken:
-      return isPrimitive(left) && isPrimitive(right) ? left != right : undefined;
+      return isPrimitive(left) && isPrimitive(right)
+        ? left != right
+        : undefined;
   }
 
   if (typeof left === 'number' && typeof right === 'number') {
@@ -1164,7 +1200,10 @@ export function readScriptMetadata(
     modules: new Map(),
     values: new Map(),
     resolving: new Set(),
-    compilerOptions: { ...DEFAULT_COMPILER_OPTIONS, ...options.compilerOptions },
+    compilerOptions: {
+      ...DEFAULT_COMPILER_OPTIONS,
+      ...options.compilerOptions,
+    },
     depth: 0,
     calls: 0,
     iterations: 0,

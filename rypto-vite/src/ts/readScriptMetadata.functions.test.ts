@@ -430,7 +430,9 @@ describe('things that must not be evaluated', () => {
 
 describe('termination', () => {
   it('gives up on infinite recursion', () => {
-    expect(read('const f = () => f(); export const X = f();', ['X'])).toEqual({});
+    expect(read('const f = () => f(); export const X = f();', ['X'])).toEqual(
+      {}
+    );
   });
 
   it('gives up on infinite recursion through default values', () => {
