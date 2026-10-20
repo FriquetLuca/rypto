@@ -3,8 +3,9 @@ import type { Entry } from './createEntry.js';
 import type { Segment } from './parseRoute.js';
 import { parseUrl } from './parseUrl.js';
 import type { Match, Params } from './router.js';
+import { splitRoute } from './splitRoute.js';
 
-const decode = (s: string) => {
+export const decode: (s: string) => string = (s: string) => {
   try {
     return decodeURIComponent(s);
   } catch {
@@ -12,24 +13,8 @@ const decode = (s: string) => {
   }
 };
 
-/** Split a pathname into non-empty segments, decoding only the ones that need it. */
-function toSegments(pathname: string): string[] {
-  const out: string[] = [];
-  let start = 0;
-  for (let i = 0; i <= pathname.length; i++) {
-    if (i === pathname.length || pathname.charCodeAt(i) === 47 /* '/' */) {
-      if (i > start) {
-        const segment = pathname.slice(start, i);
-        out.push(segment.includes('%') ? decode(segment) : segment);
-      }
-      start = i + 1;
-    }
-  }
-  return out;
-}
-
 function matchSegments(segments: Segment[], path: string[]): Params | null {
-  let params: Params | undefined; // allocated on the first capture, not for every attempt
+  let params: Params | undefined;
   let i = 0;
   for (const seg of segments) {
     switch (seg.type) {
@@ -40,7 +25,7 @@ function matchSegments(segments: Segment[], path: string[]): Params | null {
       case 'dynamic': {
         if (i >= path.length) return null;
         if (seg.single !== undefined) {
-          (params ??= {})[seg.single] = path[i]; // path segments are never empty
+          (params ??= {})[seg.single] = path[i];
         } else {
           const m = seg.regex.exec(path[i]);
           if (!m) return null;
@@ -82,7 +67,6 @@ function scan<T>(
   return null;
 }
 
-/** The result of a match. `searchParams` is a prototype getter, so no closure is allocated per match. */
 class RouteMatch<T> implements Match<T> {
   #searchParams: URLSearchParams | undefined;
 
@@ -96,18 +80,15 @@ class RouteMatch<T> implements Match<T> {
   ) {}
 
   get searchParams(): URLSearchParams {
-    return (this.#searchParams ??= new URLSearchParams(this.search)); // built on first access
+    return (this.#searchParams ??= new URLSearchParams(this.search));
   }
 }
 
 export function matchRoute<T>(
   url: string,
-  routeLookup: Index<T>
+  { statics, byFirst, rest }: Index<T>
 ): RouteMatch<T> | null {
-  const { statics, byFirst, rest } = routeLookup;
   const { pathname, search, hash } = parseUrl(url);
-
-  // fast path: exact static route (a '%' means decoding could change the segments)
   if (!pathname.includes('%')) {
     const trimmed =
       pathname.length > 1 && pathname.charCodeAt(pathname.length - 1) === 47
@@ -117,16 +98,16 @@ export function matchRoute<T>(
     if (hit)
       return new RouteMatch(hit.value, {}, hit.pattern, pathname, search, hash);
   }
-
-  const path = toSegments(pathname);
+  const path = splitRoute(pathname).map((segment) =>
+    segment.includes('%') ? decode(segment) : segment
+  );
   const bucket = path.length > 0 ? byFirst.get(path[0]) : undefined;
   const found = (bucket && scan(bucket, path)) || scan(rest, path);
   if (!found) return null;
-  const { entry, params } = found;
   return new RouteMatch(
-    entry.value,
-    params,
-    entry.pattern,
+    found.entry.value,
+    found.params,
+    found.entry.pattern,
     pathname,
     search,
     hash

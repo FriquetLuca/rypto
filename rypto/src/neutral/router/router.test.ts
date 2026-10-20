@@ -1,4 +1,7 @@
-import { Router, type Params } from './router.js';
+import { Router, encodeRouteSegment, type Params } from './index.js';
+import { parseUrl } from './parseUrl.js';
+import { parseRoute } from './parseRoute.js';
+import { RouteSyntaxError } from './routeSyntaxError.js';
 import { expect, test } from 'vitest';
 
 // [pattern, url, expected params (null = no match)]
@@ -206,6 +209,46 @@ test('priority > params come from the winning route only', () => {
   });
 });
 
+const syntaxErrors = [
+  '/[a][b]', // params must be separated
+  '/[[a]]/b', // optional must be last
+  '/[...a]/b', // wildcard must be last
+  '/[[...a]]/b', // optional wildcard must be last
+  '/[a]/[a]', // duplicate names
+  '/x-[...a]', // wildcard must fill the segment
+  '/x-[[a]]', // optional must fill the segment
+  '/[a',
+  '/[]',
+  '/[1a]',
+];
+for (const pattern of syntaxErrors) {
+  test(`syntax error > '${pattern}'`, () => {
+    expect(() => parseRoute(pattern)).toThrow(RouteSyntaxError);
+  });
+}
+
+// [url, pathname, search, hash]
+const parseUrlTests: [string, string, string, string][] = [
+  ['/a', '/a', '', ''],
+  ['/a?x=1', '/a', '?x=1', ''],
+  ['/a#top', '/a', '', '#top'],
+  ['/a?x=1#top', '/a', '?x=1', '#top'],
+  ['/a#top?x=1', '/a', '', '#top?x=1'], // '?' after '#' belongs to the hash
+  ['/a?x=1?y=2', '/a', '?x=1?y=2', ''], // only the first '?' starts the query
+  ['/a#one#two', '/a', '', '#one#two'],
+  ['/a?', '/a', '', ''], // bare '?' / '#' are empty, like URL
+  ['/a#', '/a', '', ''],
+  ['/a?#', '/a', '', ''],
+  ['/a/?x=1', '/a/', '?x=1', ''],
+  ['?x=1', '', '?x=1', ''],
+  ['', '', '', ''],
+];
+for (const [url, pathname, search, hash] of parseUrlTests) {
+  test(`parseUrl > '${url}'`, () => {
+    expect(parseUrl(url)).toEqual({ pathname, search, hash });
+  });
+}
+
 test('match > exposes pathname, search, searchParams and hash', () => {
   const m = new Router<string>()
     .add('/blog/[slug]', 'post')
@@ -264,5 +307,158 @@ for (const [pattern, url, expected] of lineTerminatorTests) {
     expect(
       new Router<string>().add(pattern, pattern).match(url)?.params
     ).toEqual(expected);
+  });
+}
+
+// Static text in a pattern is decoded, like the URL segments it is compared with,
+// so `/hello%20world`, `/hello world` and the URL a browser sends all mean the same thing.
+const encodedPatternTests: [string, string, Params | null][] = [
+  ['/hello%20world', '/hello%20world', {}],
+  ['/hello%20world', '/hello world', {}],
+  ['/hello world', '/hello%20world', {}],
+  ['/hello%20world', '/hello%2520world', null], // that URL is the text 'hello%20world'
+
+  ['/caf%C3%A9', '/caf%C3%A9', {}],
+  ['/caf%C3%A9', '/café', {}],
+  ['/café', '/caf%C3%A9', {}],
+  ['/caf%c3%a9', '/caf%C3%A9', {}], // hex case does not matter
+
+  ['/100%25', '/100%25', {}],
+  ['/100%25', '/100%', {}], // a malformed escape in the URL stays as text
+  ['/100%', '/100%25', {}], // and so does one in the pattern
+  ['/%2540', '/%2540', {}], // '%40' as text, encoded twice
+
+  // an encoded '/' is one segment, never two
+  ['/a%2Fb', '/a%2Fb', {}],
+  ['/a%2Fb', '/a/b', null],
+  ['/a/b', '/a%2Fb', null],
+
+  // an encoded bracket is a literal bracket, not router syntax
+  ['/a%5Bb%5D', '/a[b]', {}],
+  ['/a%5Bb%5D', '/a%5Bb%5D', {}],
+  ['/%5Bslug%5D', '/[slug]', {}],
+  ['/%5Bslug%5D', '/hello', null],
+
+  // mixed segments: text is decoded, params capture decoded values
+  ['/my%20file-[id]', '/my%20file-7', { id: '7' }],
+  ['/my%20file-[id]', '/my file-7', { id: '7' }],
+  ['/caf%C3%A9.[ext]', '/café.pdf', { ext: 'pdf' }],
+  ['/caf%C3%A9.[ext]', '/caf%C3%A9.pdf', { ext: 'pdf' }],
+  ['/[a]-%5Bb%5D', '/1-[b]', { a: '1' }],
+
+  // encoded folders around params
+  ['/mes%20photos/[id]', '/mes%20photos/caf%C3%A9', { id: 'café' }],
+  ['/docs%20v2/[...path]', '/docs%20v2/a%20b/c', { path: ['a b', 'c'] }],
+];
+for (const [pattern, url, expected] of encodedPatternTests) {
+  test(`encoded pattern > '${pattern}' ~ '${url}'`, () => {
+    expect(
+      new Router<string>().add(pattern, pattern).match(url)?.params ?? null
+    ).toEqual(expected);
+  });
+}
+
+test('encoded pattern > an encoded static route beats a param', () => {
+  for (const order of [
+    ['/[a]', '/caf%C3%A9'],
+    ['/caf%C3%A9', '/[a]'],
+  ]) {
+    const router = new Router<string>();
+    for (const p of order) router.add(p, p);
+    expect(router.match('/café')?.value).toEqual('/caf%C3%A9');
+    expect(router.match('/caf%C3%A9')?.value).toEqual('/caf%C3%A9');
+    expect(router.match('/cafe')?.value).toEqual('/[a]');
+  }
+});
+
+// [file or folder name, encoded segment]
+const encodeRouteSegmentTests: [string, string][] = [
+  ['', ''],
+
+  // text is encoded
+  ['hello world', 'hello%20world'],
+  ['café', 'caf%C3%A9'],
+  ['100%', '100%25'],
+  ['what?', 'what%3F'],
+  ['a#b', 'a%23b'],
+  ['a&b=c', 'a%26b%3Dc'],
+  ['你好', '%E4%BD%A0%E5%A5%BD'],
+  ['😀', '%F0%9F%98%80'],
+  ['a%20b', 'a%2520b'],
+  ['tab\there', 'tab%09here'],
+
+  // unreserved characters are kept
+  ['abc-DEF_123.~', 'abc-DEF_123.~'],
+  ["!*'()", "!*'()"],
+
+  // router syntax is kept as is
+  ['[slug]', '[slug]'],
+  ['[$id]', '[$id]'],
+  ['[_a1]', '[_a1]'],
+  ['[...path]', '[...path]'],
+  ['[[lang]]', '[[lang]]'],
+  ['[[...all]]', '[[...all]]'],
+  ['[a]-[b]', '[a]-[b]'],
+
+  // text around params is encoded, the params are not
+  ['my file-[id]', 'my%20file-[id]'],
+  ['café.[ext]', 'caf%C3%A9.[ext]'],
+  ['[name] (copy).[ext]', '[name]%20(copy).[ext]'],
+
+  // malformed brackets are not touched
+  ['[1a]', '[1a]'],
+  ['a[b', 'a[b'],
+  ['[a', '[a'],
+];
+for (const [input, expected] of encodeRouteSegmentTests) {
+  test(`encodeRouteSegment > '${input}' -> '${expected}'`, () => {
+    expect(encodeRouteSegment(input)).toEqual(expected);
+  });
+}
+
+for (const input of ['[1a]', 'a[b', '[a', 'x]', '[a]]', '[[a]]x']) {
+  test(`encodeRouteSegment > '${input}' is still reported by parseRoute`, () => {
+    expect(() => parseRoute(encodeRouteSegment(input))).toThrow(
+      RouteSyntaxError
+    );
+  });
+}
+
+// whatever a name contains, its encoded pattern matches the URL made with encodeURIComponent
+const trickyNames = [
+  'hello world',
+  'café',
+  '100%',
+  '%',
+  '%%',
+  '%zz',
+  '%E0%A4%A',
+  'a%2Fb',
+  'a%20b',
+  'what?',
+  'a#b',
+  'a&b=c',
+  'a+b',
+  'a,b;c',
+  'a:b@c',
+  'a\\b',
+  "it's",
+  '"quoted"',
+  '<tag>',
+  'tab\there',
+  'new\nline',
+  '你好',
+  '😀',
+  'ñ',
+  ' ',
+  '.',
+  '..',
+  '~',
+  '-',
+];
+for (const name of trickyNames) {
+  test(`encodeRouteSegment > round trip > ${JSON.stringify(name)}`, () => {
+    const router = new Router<string>().add(encodeRouteSegment(name), 'hit');
+    expect(router.match(`/${encodeURIComponent(name)}`)?.value).toEqual('hit');
   });
 }

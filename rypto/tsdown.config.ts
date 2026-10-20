@@ -1,43 +1,50 @@
 import { defineConfig } from 'tsdown';
 
-export default defineConfig({
-  /*
-  entry: {
-    // Maps src/foo.ts → dist/lib/foo.js, src/bar.ts → dist/lib/bar.js
-    'lib/*': 'src/*.ts',
-    // Include all hooks except the index file
-    'hooks/*': ['src/hooks/*.ts', '!src/hooks/index.ts'],
-    'utils/*': [
-      'src/utils/*.ts',
-      'src/utils/*.tsx',
-      '!src/utils/index.ts',
-      '!src/utils/internal.ts',
-    ],
-  },
-  deps: {
-    neverBundle: ['lodash', /^@my-scope\//],
-    alwaysBundle: ['some-package'],
-    onlyBundle: ['cac', 'bumpp'],
-    onlyImport: ['cac'],
-    resolveDepSubpath: true,
-  },
-  */
-  entry: ['src/index.ts', 'src/router/index.ts', '!src/**/*.test.ts'],
-  root: 'src',
-  platform: 'neutral',
-  format: {
-    esm: {
-      target: ['es2023'],
+export default defineConfig([
+  {
+    entry: {
+      index: 'src/neutral/index.ts',
     },
-    cjs: {
-      target: ['node20'],
+    root: 'src',
+    outDir: 'dist/neutral',
+    platform: 'neutral',
+    format: {
+      esm: {
+        target: ['es2023'],
+      },
+      cjs: {
+        target: ['node20'],
+      },
     },
+    dts: {
+      generator: 'tsc',
+    },
+    exports: true,
+    minify: true,
+    unbundle: false,
+    treeshake: true,
   },
-  dts: {
-    generator: 'tsc',
+  {
+    entry: {
+      node: 'src/node/index.ts',
+    },
+    root: 'src',
+    outDir: 'dist/node',
+    platform: 'node',
+    format: {
+      esm: {
+        target: ['es2023'],
+      },
+      cjs: {
+        target: ['node20'],
+      },
+    },
+    dts: {
+      generator: 'tsc',
+    },
+    exports: true,
+    minify: true,
+    unbundle: false,
+    treeshake: true,
   },
-  exports: true,
-  minify: true,
-  unbundle: false,
-  treeshake: true,
-});
+]);

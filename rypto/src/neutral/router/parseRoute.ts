@@ -1,6 +1,8 @@
 import { removeLastSplitIndex } from './removeLastSplitIndex.js';
 import { splitRoute } from './splitRoute.js';
 import { RouteSyntaxError } from './routeSyntaxError.js';
+import { decode } from './matchRoute.js';
+import { OPTIONAL, OPTIONAL_WILDCARD, PARAM, WILDCARD } from './utils.js';
 
 export type Part =
   { kind: 'text'; value: string } | { kind: 'param'; name: string };
@@ -11,12 +13,6 @@ export type Segment =
   | { type: 'optional'; name: string }
   | { type: 'wildcard'; name: string }
   | { type: 'optionalWildcard'; name: string };
-
-const NAME = '[A-Za-z_$][\\w$]*';
-const OPTIONAL_WILDCARD = new RegExp(`^\\[\\[\\.\\.\\.(${NAME})\\]\\]$`);
-const WILDCARD = new RegExp(`^\\[\\.\\.\\.(${NAME})\\]$`);
-const OPTIONAL = new RegExp(`^\\[\\[(${NAME})\\]\\]$`);
-const PARAM = new RegExp(`\\[(${NAME})\\]`, 'g');
 
 const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -51,14 +47,14 @@ function parseSegment(raw: string, pattern: string): Segment {
     );
   }
   if (!parts.some((p) => p.kind === 'param'))
-    return { type: 'static', value: raw };
+    return { type: 'static', value: decode(raw) };
+  for (const part of parts)
+    if (part.kind === 'text') part.value = decode(part.value);
 
   const source = parts
     .map((p) => (p.kind === 'text' ? escapeRegex(p.value) : '(.+?)'))
     .join('');
-  // dotAll so a decoded newline can be part of a param value
   const regex = new RegExp(`^${source}$`, 's');
-  // a lone `[param]` takes the whole segment, no regex needed at match time
   const single =
     parts.length === 1 && parts[0].kind === 'param' ? parts[0].name : undefined;
   return { type: 'dynamic', parts, regex, single };

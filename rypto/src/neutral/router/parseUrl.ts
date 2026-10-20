@@ -11,10 +11,8 @@ export function parseUrl(url: string): ParsedUrl {
   const rest = hashIndex === -1 ? url : url.slice(0, hashIndex);
   const searchIndex = rest.indexOf('?');
   const search = searchIndex === -1 ? '' : rest.slice(searchIndex);
-  const pathname = searchIndex === -1 ? rest : rest.slice(0, searchIndex);
-  // like URL: a bare '?' or '#' is the same as nothing
   return {
-    pathname,
+    pathname: searchIndex === -1 ? rest : rest.slice(0, searchIndex),
     search: search === '?' ? '' : search,
     hash: hash === '#' ? '' : hash,
   };

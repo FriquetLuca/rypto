@@ -15,12 +15,12 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/neutral/index.js",
+      "require": "./dist/neutral/index.cjs"
     },
-    "./router": {
-      "import": "./dist/router/index.js",
-      "require": "./dist/router/index.cjs"
+    "./node": {
+      "import": "./dist/node/node.mjs",
+      "require": "./dist/node/node.cjs"
     },
     "./package.json": "./package.json"
   },
@@ -28,9 +28,9 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdown",
+    "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
+    "build": "npm run --silent clean && tsdown",
     "dev": "tsdown --watch",
-    "bench": "npx tsx bench/run.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -44,7 +44,7 @@
     "typescript": "^6.0.3",
     "vitest": "^5.0.5"
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.cts"
+  "main": "./dist/neutral/index.cjs",
+  "module": "./dist/neutral/index.js",
+  "types": "./dist/neutral/index.d.cts"
 }

@@ -30,9 +30,13 @@ export function buildEntries<T>(entries: Entry<T>[]): Index<T> {
   const rest: Entry<T>[] = [];
   for (const entry of sorted) {
     const { segments } = entry;
-    if (segments.every((s): s is StaticSegment => s.type === 'static')) {
+    if (
+      segments.every(
+        (s): s is StaticSegment => s.type === 'static' && !s.value.includes('/')
+      )
+    ) {
       const key = joinRoute(segments.map((s) => s.value));
-      if (!statics.has(key)) statics.set(key, entry); // first registered wins
+      if (!statics.has(key)) statics.set(key, entry);
     }
     const first = segments[0];
     if (first?.type === 'static') {
