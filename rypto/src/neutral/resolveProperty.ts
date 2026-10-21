@@ -20,10 +20,10 @@ function resolveSplitProperty(
   return { found: false, value: undefined };
 }
 
-export function resolveProperty<T extends unknown>(
+export function resolveProperty(
   root: Record<string, unknown>,
   property: string
-): T | undefined {
+): unknown | undefined {
   const result = resolveSplitProperty(root, property.split('.'));
-  return result.found ? (result.value as T) : undefined;
+  return result.found ? result.value : undefined;
 }
