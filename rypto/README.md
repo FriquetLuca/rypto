@@ -1,4 +1,4 @@
-# rypto
+# Rypto
 
 ![Publish Status](https://github.com/FriquetLuca/rypto/actions/workflows/publish.yml/badge.svg)
 ![Test Status](https://github.com/FriquetLuca/rypto/actions/workflows/test.yml/badge.svg)

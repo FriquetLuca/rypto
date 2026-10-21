@@ -13,17 +13,6 @@
   "bugs": {
     "url": "https://github.com/FriquetLuca/rypto/issues"
   },
-  "exports": {
-    ".": {
-      "import": "./dist/neutral/index.js",
-      "require": "./dist/neutral/index.cjs"
-    },
-    "./node": {
-      "import": "./dist/node/node.mjs",
-      "require": "./dist/node/node.cjs"
-    },
-    "./package.json": "./package.json"
-  },
   "files": [
     "dist"
   ],
@@ -31,6 +20,7 @@
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
     "build": "npm run --silent clean && tsdown",
     "dev": "tsdown --watch",
+    "docs": "typedoc --router module --interfacePropertiesFormat table --readme none",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -38,7 +28,6 @@
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
-    "tinybench": "^6.2.2",
     "tsdown": "^0.23.1",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
@@ -46,5 +35,24 @@
   },
   "main": "./dist/neutral/index.cjs",
   "module": "./dist/neutral/index.js",
-  "types": "./dist/neutral/index.d.cts"
+  "types": "./dist/neutral/index.d.cts",
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/neutral/index.d.ts",
+        "require": "./dist/neutral/index.d.cts"
+      },
+      "import": "./dist/neutral/index.js",
+      "require": "./dist/neutral/index.cjs"
+    },
+    "./node": {
+      "types": {
+        "import": "./dist/node/node.d.ts",
+        "require": "./dist/node/node.d.cts"
+      },
+      "import": "./dist/node/node.mjs",
+      "require": "./dist/node/node.cjs"
+    },
+    "./package.json": "./package.json"
+  }
 }

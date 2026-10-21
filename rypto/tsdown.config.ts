@@ -19,7 +19,6 @@ export default defineConfig([
     dts: {
       generator: 'tsc',
     },
-    exports: true,
     minify: true,
     unbundle: false,
     treeshake: true,
@@ -42,7 +41,6 @@ export default defineConfig([
     dts: {
       generator: 'tsc',
     },
-    exports: true,
     minify: true,
     unbundle: false,
     treeshake: true,
