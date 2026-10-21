@@ -2,6 +2,7 @@
 
 ![Publish Status](https://github.com/FriquetLuca/rypto/actions/workflows/publish.yml/badge.svg)
 ![Test Status](https://github.com/FriquetLuca/rypto/actions/workflows/test.yml/badge.svg)
+![Documentation](https://github.com/FriquetLuca/rypto/rypto-vite/docs/README.md)
 
 A typescript project created from a template.
 
