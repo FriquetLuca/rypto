@@ -27,6 +27,7 @@
     "clean": "node -e \"import('node:fs').then(fs => fs.rmSync('dist', { recursive: true, force: true }))\"",
     "build": "npm run --silent clean && tsdown",
     "dev": "tsdown --watch",
+    "docs": "typedoc --router module --interfacePropertiesFormat table --readme none",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
@@ -38,7 +39,6 @@
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
-    "tinybench": "^6.2.2",
     "tsdown": "^0.23.1",
     "tsx": "^4.23.15",
     "vitest": "^5.0.5"

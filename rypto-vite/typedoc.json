@@ -1,0 +1,17 @@
+{
+  "$schema": "../node_modules/typedoc-plugin-markdown/typedoc-plugin-markdown.schema.json",
+  "entryPoints": ["src/ts/index.ts"],
+  "plugin": ["typedoc-plugin-markdown", "../td-plugin.mjs"],
+  "out": "docs",
+  "enumMembersFormat": "table",
+  "parametersFormat": "table",
+  "typeDeclarationFormat": "table",
+  "indexFormat": "table",
+  "useCodeBlocks": true,
+  "expandObjects": true,
+  "mergeReadme": false,
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "hidePageTitle": true,
+  "gitRevision": "master"
+}

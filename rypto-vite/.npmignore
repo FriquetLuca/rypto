@@ -47,5 +47,12 @@ coverage/
 .codeclimate.yml
 build.mjs
 eslint.config.js
-TODO.md
 tsconfig.json
+
+#docs
+docs/
+TODO.md
+CONTRIBUTING.md
+ARCHITECTURE.md
+typedoc.json
+tsdown.config.json
