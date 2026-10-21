@@ -312,7 +312,7 @@ function loadModule(
   if (session.modules.has(file)) {
     return session.modules.get(file) ?? undefined;
   }
-
+  // eslint-disable-next-line no-useless-assignment
   let info: ModuleInfo | null = null;
   try {
     info = parseModule(file, fs.readFileSync(file, 'utf8'));
